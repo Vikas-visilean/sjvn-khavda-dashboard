@@ -1,0 +1,656 @@
+<title>SJVN Khavda 200 MW — Executive Review</title>
+<style>
+:root{
+  color-scheme: light;
+  --page:#f6f6f2; --surface:#fcfcfb; --ink:#161613; --ink2:#52514e; --mut:#898781;
+  --grid:#e5e4dc; --line:rgba(11,11,11,.09); --line2:rgba(11,11,11,.14);
+  --blue:#2a78d6; --blue-lt:#9ec5f4; --blue-wash:rgba(42,120,214,.10);
+  --good:#0ca30c; --good-text:#006300; --good-wash:rgba(12,163,12,.12);
+  --warn:#fab219; --warn-text:#7a5a00; --warn-wash:rgba(250,178,25,.16);
+  --serious:#ec835a; --crit:#d03b3b; --crit-text:#b32f2f; --crit-wash:rgba(208,59,59,.10);
+  --nr-wash:rgba(11,11,11,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --page:#0f0f0e; --surface:#1a1a19; --ink:#f5f5ee; --ink2:#c3c2b7; --mut:#898781;
+    --grid:#2c2c2a; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+    --blue:#3987e5; --blue-lt:#1c5cab; --blue-wash:rgba(57,135,229,.16);
+    --good-text:#2fc12f; --good-wash:rgba(12,163,12,.16);
+    --warn-text:#fab219; --warn-wash:rgba(250,178,25,.13);
+    --crit:#e05252; --crit-text:#ef7a7a; --crit-wash:rgba(224,82,82,.14);
+    --nr-wash:rgba(255,255,255,.06);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --page:#0f0f0e; --surface:#1a1a19; --ink:#f5f5ee; --ink2:#c3c2b7; --mut:#898781;
+  --grid:#2c2c2a; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+  --blue:#3987e5; --blue-lt:#1c5cab; --blue-wash:rgba(57,135,229,.16);
+  --good-text:#2fc12f; --good-wash:rgba(12,163,12,.16);
+  --warn-text:#fab219; --warn-wash:rgba(250,178,25,.13);
+  --crit:#e05252; --crit-text:#ef7a7a; --crit-wash:rgba(224,82,82,.14);
+  --nr-wash:rgba(255,255,255,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--page);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;}
+.wrap{max-width:1400px;margin:0 auto;padding:20px 24px 60px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- header ---------- */
+header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:6px 2px 18px}
+.brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+.brand h1{margin:0;font-size:19px;font-weight:650;letter-spacing:-.01em}
+.brand .sub{color:var(--ink2);font-size:12.5px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--ink2);background:var(--surface)}
+.chip b{color:var(--ink);font-weight:600}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.filters label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);display:block;margin:0 0 3px 2px}
+select{appearance:none;background:var(--surface);color:var(--ink);border:1px solid var(--line2);border-radius:8px;padding:6px 28px 6px 10px;font:inherit;font-size:13px;cursor:pointer;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%23898781" stroke-width="1.5"/></svg>');background-repeat:no-repeat;background-position:right 10px center}
+select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+
+/* ---------- cards & grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.card h2{margin:0 0 2px;font-size:13.5px;font-weight:650}
+.card .hint{color:var(--mut);font-size:11.5px;margin:0 0 12px}
+.cardhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* ---------- KPI tiles ---------- */
+.kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin:0 0 14px}
+@media(max-width:1100px){.kpis{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}.wrap{padding:14px 12px 40px}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 15px;display:flex;flex-direction:column;gap:3px}
+.kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+.kpi .val{font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.1}
+.kpi .sub{font-size:11.5px;color:var(--ink2)}
+.kpi .sub .neg{color:var(--crit-text);font-weight:600}
+.kpi .sub .pos{color:var(--good-text);font-weight:600}
+.kpi.alert .val{color:var(--crit-text)}
+.kpi.okay .val{color:var(--good-text)}
+
+/* ---------- stage list ---------- */
+.stage-row{display:grid;grid-template-columns:118px 1fr 92px 30px;align-items:center;gap:10px;padding:5px 6px;border-radius:7px;cursor:pointer}
+.stage-row:hover{background:var(--nr-wash)}
+.stage-row.sel{background:var(--blue-wash)}
+.stage-row .nm{font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stage-row.sel .nm{color:var(--ink);font-weight:600}
+.track{position:relative;height:10px;border-radius:4px;background:var(--nr-wash)}
+.track .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--blue);min-width:0}
+.track .plan{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink2);border-radius:1px}
+.stage-row .pcts{font-size:11.5px;color:var(--ink2);text-align:right;white-space:nowrap}
+.stage-row .pcts b{color:var(--ink);font-weight:600}
+.badge-od{font-size:10.5px;font-weight:700;color:var(--crit-text);background:var(--crit-wash);border-radius:999px;padding:1px 6px;justify-self:end}
+
+/* ---------- status chips ---------- */
+.st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;white-space:nowrap}
+.st::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
+.st.C{background:var(--good-wash);color:var(--good-text)}.st.C::before{background:var(--good)}
+.st.S{background:var(--blue-wash);color:var(--blue)}.st.S::before{background:var(--blue)}
+.st.NC{background:var(--warn-wash);color:var(--warn-text)}.st.NC::before{background:var(--warn)}
+.st.NR{background:var(--nr-wash);color:var(--mut)}.st.NR::before{background:var(--mut)}
+
+/* ---------- tracker ---------- */
+.funnel{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 14px}
+.fstep{flex:1 1 90px;min-width:90px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--page)}
+.fstep .fs-l{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);white-space:nowrap}
+.fstep .fs-v{font-size:17px;font-weight:650;margin-top:2px}
+.fstep .fs-v small{font-size:11px;color:var(--mut);font-weight:500}
+.fstep .fs-bar{height:4px;border-radius:2px;background:var(--nr-wash);margin-top:6px;position:relative;overflow:hidden}
+.fstep .fs-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:2px}
+.tr-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
+.tr-tools input[type=search]{background:var(--page);border:1px solid var(--line2);color:var(--ink);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;width:230px}
+.toggle{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--crit);width:14px;height:14px;margin:0}
+.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:separate;border-spacing:0;width:100%;font-size:12px}
+thead th{position:sticky;top:0;background:var(--surface);z-index:2;text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+tbody td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+#trackerTable td:first-child,#trackerTable th:first-child{position:sticky;left:0;background:var(--surface);z-index:1;min-width:190px;max-width:240px;box-shadow:1px 0 0 var(--line)}
+.pkg{font-weight:600;font-size:12.5px;cursor:pointer;display:flex;gap:7px;align-items:flex-start}
+.pkg .chev{color:var(--mut);font-size:10px;margin-top:3px;transition:transform .15s}
+.pkg.open .chev{transform:rotate(90deg)}
+.cell{min-width:86px}
+.cell .qty{color:var(--ink2);font-size:11px;margin-top:2px}
+.cell .dt{color:var(--mut);font-size:10.5px;margin-top:1px;white-space:nowrap}
+.cell.od .dt{color:var(--crit-text);font-weight:600}
+.cell.od .st{box-shadow:inset 0 0 0 1.5px var(--crit)}
+.cell .inh{color:var(--mut);font-size:10px}
+.dash{color:var(--grid);font-size:13px}
+tr.sub td{background:var(--page)}
+tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-weight:500;color:var(--ink2)}
+
+/* ---------- watchlist ---------- */
+.wl-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.wchip{border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:500}
+.wchip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.late{color:var(--crit-text);font-weight:650}
+.wl-note{color:var(--mut);font-size:11.5px;margin-top:8px}
+
+/* ---------- feeder cards ---------- */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fcard{border:1px solid var(--line);border-radius:9px;padding:11px 13px;cursor:pointer;background:var(--page)}
+.fcard:hover{border-color:var(--line2)}
+.fcard.sel{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.fcard .fname{font-size:12px;font-weight:650;display:flex;justify-content:space-between;align-items:center}
+.fcard .fpct{font-size:21px;font-weight:650;letter-spacing:-.02em;margin:2px 0 0}
+.fcard .fplan{font-size:11px;color:var(--ink2)}
+.fcard .mini{margin-top:8px;display:flex;flex-direction:column;gap:4px}
+.mini .mrow{display:grid;grid-template-columns:74px 1fr 34px;gap:7px;align-items:center;font-size:10.5px;color:var(--mut)}
+.mini .mtrack{height:5px;border-radius:2.5px;background:var(--nr-wash);position:relative}
+.mini .mtrack i{position:absolute;left:0;top:0;bottom:0;border-radius:2.5px;background:var(--blue)}
+.mini .mv{text-align:right;color:var(--ink2)}
+
+/* ---------- constraints ---------- */
+.cons{display:flex;flex-direction:column;gap:8px}
+.con{border:1px solid var(--line);border-left:3px solid var(--crit);border-radius:8px;padding:10px 13px;background:var(--page)}
+.con .ct{font-weight:650;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.con .cm{color:var(--ink2);font-size:12px;margin-top:3px}
+.pill{font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 8px}
+.pill.crit{background:var(--crit-wash);color:var(--crit-text)}
+.pill.med{background:var(--warn-wash);color:var(--warn-text)}
+
+/* ---------- charts ---------- */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink2);margin:4px 0 8px}
+.legend .li{display:inline-flex;align-items:center;gap:6px}
+.legend .sw{width:14px;height:3px;border-radius:2px}
+.legend .sw.dot{width:8px;height:8px;border-radius:50%}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);border:1px solid var(--line2);border-radius:8px;padding:8px 11px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.13);display:none;max-width:280px}
+#tip .t-h{font-weight:650;margin-bottom:3px}
+#tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--ink2)}
+#tip .t-r b{color:var(--ink);font-weight:600}
+
+section{margin-top:14px}
+.span8{grid-column:span 8}.span4{grid-column:span 4}.span12{grid-column:span 12}.span7{grid-column:span 7}.span5{grid-column:span 5}
+@media(max-width:1000px){.span8,.span4,.span7,.span5{grid-column:span 12}}
+footer{margin-top:22px;color:var(--mut);font-size:11.5px;line-height:1.6}
+footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-size:11px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>SJVN Khavda 200 MW <span style="color:var(--mut);font-weight:500">· Plot 1</span></h1>
+      <div class="sub">Executive Project Review — Design → Procurement → Execution</div>
+    </div>
+    <span class="chip">Capacity <b>200 MWac</b></span>
+    <span class="chip">Data as of <b id="asof"></b></span>
+    <div class="filters">
+      <div><label for="fStage">Stage</label><select id="fStage"><option value="ALL">All stages</option></select></div>
+      <div><label for="fFeeder">Feeder</label><select id="fFeeder">
+        <option value="ALL">All feeders</option><option value="F1">Feeder 1</option><option value="F2">Feeder 2</option>
+        <option value="F3">Feeder 3</option><option value="F4">Feeder 4</option><option value="MCR">MCR</option><option value="CMN">Common</option>
+      </select></div>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <div class="card span8">
+      <div class="cardhead"><div><h2>S-Curve — Plan vs Actual</h2><p class="hint">Cumulative progress, duration-weighted across all activities in scope</p></div></div>
+      <div class="legend">
+        <span class="li"><span class="sw" style="background:var(--blue)"></span>Actual (cumulative)</span>
+        <span class="li"><span class="sw" style="background:var(--mut);height:0;border-top:2px dashed var(--mut)"></span>Plan (cumulative)</span>
+      </div>
+      <div class="chart" id="scurve"></div>
+      <div class="legend" style="margin-top:14px">
+        <span class="li"><span class="sw dot" style="background:var(--blue)"></span>Actual (monthly)</span>
+        <span class="li"><span class="sw dot" style="background:var(--blue-lt)"></span>Plan (monthly)</span>
+      </div>
+      <div class="chart" id="monthly"></div>
+    </div>
+
+    <div class="card span4">
+      <div class="cardhead"><div><h2>Stage Progress</h2><p class="hint">Actual bar vs plan marker · click a stage to filter</p></div></div>
+      <div id="stages"></div>
+    </div>
+  </div>
+
+  <section class="card span12">
+    <div class="cardhead"><div><h2>Design → Procurement → Execution Pipeline</h2>
+      <p class="hint">Every supply package tracked across its full lifecycle. Click a package to expand feeder-wise detail. Red-ringed cells are past their planned date.</p></div></div>
+    <div class="funnel" id="funnel"></div>
+    <div class="tr-tools">
+      <input type="search" id="trSearch" placeholder="Search packages…">
+      <label class="toggle"><input type="checkbox" id="trDelay"> Show delayed packages only</label>
+      <span id="trCount" style="color:var(--mut);font-size:12px"></span>
+    </div>
+    <div class="tblwrap" style="max-height:560px;overflow-y:auto">
+      <table id="trackerTable"></table>
+    </div>
+  </section>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card span7">
+      <div class="cardhead"><div><h2>Delay &amp; Critical Watchlist</h2><p class="hint">Activities past their planned finish, and critical-path items</p></div></div>
+      <div class="wl-chips" id="wlChips"></div>
+      <div class="tblwrap" style="max-height:430px;overflow-y:auto"><table id="wlTable"></table></div>
+      <div class="wl-note" id="wlNote"></div>
+    </div>
+    <div class="card span5">
+      <div class="cardhead"><div><h2>Feeder Scorecard</h2><p class="hint">Duration-weighted progress vs plan · click to filter</p></div></div>
+      <div class="fgrid" id="feeders"></div>
+      <div style="margin-top:14px">
+        <h2 style="font-size:13.5px;margin:0 0 2px">Open Constraints</h2>
+        <p class="hint">From the VisiLean constraint log</p>
+        <div class="cons" id="cons"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div><b>Method.</b> Progress is duration-weighted: each activity contributes its planned duration in days; Plan % prorates activities linearly between planned start and finish as of the data date; SPI = cumulative actual ÷ cumulative plan. Forecast dates shown are planned finish dates from the live schedule. Source: VisiLean PowerBI API (tasks &amp; constraint log), <span id="genat"></span>.</div>
+    <div style="margin-top:4px">To refresh with live data, run <code>node build-dashboard.js</code> in the project folder and reopen this file.</div>
+  </footer>
+</div>
+<div id="tip"></div>
+
+<script>
+const DATA = "__DATA__";
+const AS_OF = DATA.asOf;
+const $ = s => document.querySelector(s);
+const state = { stage:'ALL', feeder:'ALL', wlMode:'all', trSearch:'', trDelay:false, open:{} };
+
+/* ---------- helpers ---------- */
+const MS = 86400000;
+const d2n = s => s ? Date.parse(s + 'T00:00:00Z') : null;
+const TODAY = d2n(AS_OF);
+function dur(t){ const a=d2n(t.ps), b=d2n(t.pe); if(a==null||b==null) return 1; return Math.max(1,(b-a)/MS+1); }
+function planFrac(t){ const a=d2n(t.ps), b=d2n(t.pe); if(a==null||b==null) return 0; if(TODAY>=b) return 1; if(TODAY<=a) return 0; return (TODAY-a)/(b-a); }
+function isOver(t){ const b=d2n(t.pe); return b!=null && b<TODAY && t.st!=='C'; }
+function daysLate(t){ const b=d2n(t.pe); return b==null?0:Math.round((TODAY-b)/MS); }
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtD(s){ if(!s) return '—'; const p=s.split('-'); return (+p[2]) + ' ' + MON[+p[1]-1] + ' ' + p[0].slice(2); }
+function fmtQ(v){ if(v==null) return ''; if(Math.abs(v)>=1e6) return (v/1e6).toFixed(2)+'M'; if(Math.abs(v)>=1e4) return Math.round(v/1e3)+'k'; return (Math.round(v*100)/100).toLocaleString('en-IN'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const ST_LABEL = { C:'Complete', S:'Started', NC:'Committed·pending', NR:'Not started' };
+
+function scope(){
+  return DATA.tasks.filter(t =>
+    (state.stage==='ALL' || t.s===state.stage) &&
+    (state.feeder==='ALL' || t.f===state.feeder));
+}
+function wprog(list){
+  let w=0, wp=0, plan=0;
+  list.forEach(t=>{ const d=dur(t); w+=d; wp+=d*(t.pc||0); plan+=d*planFrac(t)*100; });
+  return w? {act:wp/w, plan:plan/w, w} : {act:0, plan:0, w:0};
+}
+
+/* ---------- tooltip ---------- */
+const tip = $('#tip');
+function showTip(html, x, y){
+  tip.innerHTML = html; tip.style.display='block';
+  const r = tip.getBoundingClientRect();
+  let L = x+14, T = y+12;
+  if (L + r.width > innerWidth-8) L = x - r.width - 12;
+  if (T + r.height > innerHeight-8) T = y - r.height - 10;
+  tip.style.left=L+'px'; tip.style.top=T+'px';
+}
+function hideTip(){ tip.style.display='none'; }
+
+/* ---------- month series ---------- */
+function monthSeries(list){
+  const months = [];
+  let lo=null, hi=null;
+  list.forEach(t=>{ const a=d2n(t.ps), b=d2n(t.pe); if(a!=null&&(lo==null||a<lo))lo=a; if(b!=null&&(hi==null||b>hi))hi=b; });
+  if(lo==null) return {keys:[], plan:[], act:[], cumP:[], cumA:[], totW:0};
+  const start = new Date(lo); start.setUTCDate(1);
+  const end = new Date(hi);
+  const keys=[]; const idx={};
+  for(let d=new Date(start); d<=end; d.setUTCMonth(d.getUTCMonth()+1)){
+    const k=d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0');
+    idx[k]=keys.length; keys.push(k);
+  }
+  const plan=keys.map(()=>0), act=keys.map(()=>0);
+  let totW=0;
+  function spread(arr, a, b, weight){
+    if(a==null||b==null||weight<=0) return;
+    const total=(b-a)/MS+1;
+    let cur=new Date(a); cur=new Date(Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth(),1));
+    while(cur.getTime()<=b){
+      const mEnd=Date.UTC(cur.getUTCFullYear(),cur.getUTCMonth()+1,0);
+      const s=Math.max(a,cur.getTime()), e=Math.min(b,mEnd);
+      const k=cur.getUTCFullYear()+'-'+String(cur.getUTCMonth()+1).padStart(2,'0');
+      if(idx[k]!=null) arr[idx[k]] += ((e-s)/MS+1)/total*weight;
+      cur.setUTCMonth(cur.getUTCMonth()+1);
+    }
+  }
+  list.forEach(t=>{
+    const d=dur(t); totW+=d;
+    spread(plan, d2n(t.ps), d2n(t.pe), d);
+    const pc=(t.pc||0)/100;
+    if(pc>0){
+      const aa=d2n(t.as)||d2n(t.ps), ab=d2n(t.ae)||(t.st==='S'?TODAY:d2n(t.ae));
+      if(aa!=null&&ab!=null&&ab>=aa) spread(act, aa, ab, d*pc);
+    }
+  });
+  const cumP=[], cumA=[]; let cp=0, ca=0;
+  keys.forEach((k,i)=>{ cp+=plan[i]; ca+=act[i]; cumP.push(cp/totW*100); cumA.push(ca/totW*100); });
+  return {keys, plan:plan.map(v=>v/totW*100), act:act.map(v=>v/totW*100), cumP, cumA, totW};
+}
+function monLabel(k){ const p=k.split('-'); return MON[+p[1]-1]+" '"+p[0].slice(2); }
+
+/* ---------- KPI row ---------- */
+function renderKPIs(){
+  const list = scope();
+  const p = wprog(list);
+  const ms = monthSeries(list);
+  // SPI at data date
+  const curKey = AS_OF.slice(0,7);
+  let ci = ms.keys.indexOf(curKey); if(ci<0) ci = ms.keys.length-1;
+  // prorate current month plan
+  let cumPlanNow = 0;
+  list.forEach(t=>{ cumPlanNow += dur(t)*planFrac(t); });
+  cumPlanNow = ms.totW? cumPlanNow/ms.totW*100 : 0;
+  const spi = cumPlanNow>0 ? p.act/cumPlanNow : 1;
+  const done = list.filter(t=>t.st==='C').length, started = list.filter(t=>t.st==='S').length;
+  const over = list.filter(isOver);
+  const crit = list.filter(t=>t.cr);
+  const critOpen = crit.filter(t=>t.st!=='C');
+  const consOpen = DATA.constraints.filter(c=>!c.done);
+  const consOver = consOpen.filter(c=>c.target && d2n(c.target)<TODAY);
+  const finish = list.map(t=>t.pe).filter(Boolean).sort().slice(-1)[0];
+  const daysTo = finish? Math.round((d2n(finish)-TODAY)/MS) : null;
+  const gap = p.act - p.plan;
+  $('#kpis').innerHTML = `
+    <div class="kpi"><span class="lbl">Overall progress</span><span class="val num">${p.act.toFixed(2)}%</span>
+      <span class="sub num">plan ${p.plan.toFixed(1)}% · <span class="${gap<-1?'neg':'pos'}">${gap>=0?'+':''}${gap.toFixed(1)} pts</span></span></div>
+    <div class="kpi ${spi<0.9?'alert':''}"><span class="lbl">SPI</span><span class="val num">${spi.toFixed(2)}</span>
+      <span class="sub">target 1.00 — ${spi<0.9?'behind schedule':spi<1?'slightly behind':'on track'}</span></span></div>
+    <div class="kpi"><span class="lbl">Activities</span><span class="val num">${done}<small style="font-size:14px;color:var(--mut)"> /${list.length}</small></span>
+      <span class="sub num">${started} in progress</span></div>
+    <div class="kpi ${over.length?'alert':''}"><span class="lbl">Overdue</span><span class="val num">${over.length}</span>
+      <span class="sub">past planned finish</span></div>
+    <div class="kpi"><span class="lbl">Critical path</span><span class="val num">${critOpen.length}</span>
+      <span class="sub">open critical activities</span></div>
+    <div class="kpi ${consOver.length?'alert':''}"><span class="lbl">Constraints</span><span class="val num">${consOpen.length}</span>
+      <span class="sub num">${consOver.length} overdue</span></div>
+    <div class="kpi"><span class="lbl">Plant handover</span><span class="val num">${finish?fmtD(finish):'—'}</span>
+      <span class="sub num">${daysTo!=null? daysTo+' days to go':''}</span></div>`;
+}
+
+/* ---------- S-curve ---------- */
+function renderSCurve(){
+  const list = scope();
+  const ms = monthSeries(list);
+  const box = $('#scurve');
+  if(!ms.keys.length){ box.innerHTML='<p class="hint">No dated activities in scope.</p>'; return; }
+  const W=960, H=290, mL=42, mR=18, mT=14, mB=30;
+  const iw=W-mL-mR, ih=H-mT-mB;
+  const x = i => mL + iw*(i/(ms.keys.length-1||1));
+  const y = v => mT + ih*(1-v/100);
+  let g='';
+  [0,25,50,75,100].forEach(v=>{ g+=`<line x1="${mL}" x2="${W-mR}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)" stroke-width="1"/><text x="${mL-7}" y="${y(v)+4}" text-anchor="end" font-size="10.5" fill="var(--mut)" class="num">${v}%</text>`; });
+  let xl='';
+  ms.keys.forEach((k,i)=>{ if(i%2===0||i===ms.keys.length-1) xl+=`<text x="${x(i)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--mut)">${monLabel(k)}</text>`; });
+  const path = arr => arr.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  // actual curve only up to current month
+  const curKey = AS_OF.slice(0,7);
+  let ci = ms.keys.indexOf(curKey); if(ci<0) ci=ms.keys.length-1;
+  const actArr = ms.cumA.slice(0, ci+1);
+  // today x position (fraction within month)
+  const tD = new Date(TODAY);
+  const frac = (tD.getUTCDate()-1)/30;
+  const tx = x(Math.min(ci+frac, ms.keys.length-1));
+  const planAtNow = ms.cumP[ci]!=null? ms.cumP[ci] : 0;
+  const actNow = actArr[actArr.length-1]||0;
+  const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative plan versus actual S curve">
+    ${g}${xl}
+    <line x1="${mL}" x2="${W-mR}" y1="${y(0)}" y2="${y(0)}" stroke="var(--line2)" stroke-width="1"/>
+    <line x1="${tx}" x2="${tx}" y1="${mT}" y2="${y(0)}" stroke="var(--mut)" stroke-width="1" stroke-dasharray="2 3"/>
+    <text x="${tx+5}" y="${mT+10}" font-size="10" fill="var(--mut)">Today</text>
+    <path d="${path(ms.cumP)}" fill="none" stroke="var(--mut)" stroke-width="1.8" stroke-dasharray="5 4"/>
+    <path d="${path(actArr)}" fill="none" stroke="var(--blue)" stroke-width="2.4"/>
+    <circle cx="${x(ci)}" cy="${y(planAtNow)}" r="3.5" fill="var(--mut)"/>
+    <circle cx="${x(actArr.length-1)}" cy="${y(actNow)}" r="4.5" fill="var(--blue)" stroke="var(--surface)" stroke-width="2"/>
+    <text x="${x(actArr.length-1)+8}" y="${y(actNow)+4}" font-size="11.5" font-weight="650" fill="var(--blue)" class="num">${actNow.toFixed(1)}%</text>
+    <text x="${x(ci)+8}" y="${y(planAtNow)-6}" font-size="10.5" fill="var(--mut)" class="num">plan ${planAtNow.toFixed(1)}%</text>
+    <rect id="scOverlay" x="${mL}" y="${mT}" width="${iw}" height="${ih}" fill="transparent"/>
+  </svg>`;
+  box.innerHTML = svg;
+  const ov = box.querySelector('#scOverlay');
+  const svgEl = box.querySelector('svg');
+  ov.addEventListener('mousemove', e=>{
+    const r = svgEl.getBoundingClientRect();
+    const px = (e.clientX-r.left)/r.width*W;
+    let i = Math.round((px-mL)/iw*(ms.keys.length-1));
+    i = Math.max(0, Math.min(ms.keys.length-1, i));
+    showTip(`<div class="t-h">${monLabel(ms.keys[i])}</div>
+      <div class="t-r"><span>Cum plan</span><b class="num">${ms.cumP[i].toFixed(1)}%</b></div>
+      <div class="t-r"><span>Cum actual</span><b class="num">${i<=ci? (ms.cumA[i]).toFixed(1)+'%':'—'}</b></div>
+      <div class="t-r"><span>Plan (month)</span><b class="num">${ms.plan[i].toFixed(1)}%</b></div>
+      <div class="t-r"><span>Actual (month)</span><b class="num">${i<=ci? ms.act[i].toFixed(1)+'%':'—'}</b></div>`, e.clientX, e.clientY);
+  });
+  ov.addEventListener('mouseleave', hideTip);
+
+  // monthly bars
+  const H2=150, mB2=26, ih2=H2-mT-mB2;
+  const y2 = (v,max)=> mT + ih2*(1-v/max);
+  const maxV = Math.max(1, ...ms.plan, ...ms.act)*1.15;
+  const bw = Math.min(14, iw/ms.keys.length/2.6);
+  let bars='', xl2='';
+  ms.keys.forEach((k,i)=>{
+    const cx = x(i);
+    bars += `<rect x="${cx-bw-1}" y="${y2(ms.plan[i],maxV)}" width="${bw}" height="${Math.max(0,ih2+mT-y2(ms.plan[i],maxV))}" rx="2.5" fill="var(--blue-lt)" data-i="${i}"/>`;
+    if(i<=ci) bars += `<rect x="${cx+1}" y="${y2(ms.act[i],maxV)}" width="${bw}" height="${Math.max(0,ih2+mT-y2(ms.act[i],maxV))}" rx="2.5" fill="var(--blue)" data-i="${i}"/>`;
+    if(i%2===0||i===ms.keys.length-1) xl2+=`<text x="${cx}" y="${H2-7}" text-anchor="middle" font-size="10" fill="var(--mut)">${monLabel(k)}</text>`;
+  });
+  $('#monthly').innerHTML = `<svg viewBox="0 0 ${W} ${H2}" role="img" aria-label="Monthly plan versus actual progress">
+    <line x1="${mL}" x2="${W-mR}" y1="${mT+ih2}" y2="${mT+ih2}" stroke="var(--line2)"/>
+    <text x="${mL-7}" y="${y2(maxV/1.15,maxV)+4}" text-anchor="end" font-size="10" fill="var(--mut)" class="num">${(maxV/1.15).toFixed(0)}%</text>
+    ${bars}${xl2}</svg>`;
+  $('#monthly').querySelectorAll('rect').forEach(rc=>{
+    rc.addEventListener('mousemove', e=>{
+      const i=+rc.dataset.i;
+      showTip(`<div class="t-h">${monLabel(ms.keys[i])}</div>
+        <div class="t-r"><span>Plan</span><b class="num">${ms.plan[i].toFixed(2)}%</b></div>
+        <div class="t-r"><span>Actual</span><b class="num">${i<=ci?ms.act[i].toFixed(2)+'%':'—'}</b></div>`, e.clientX, e.clientY);
+    });
+    rc.addEventListener('mouseleave', hideTip);
+  });
+}
+
+/* ---------- stages ---------- */
+function renderStages(){
+  const base = DATA.tasks.filter(t => state.feeder==='ALL' || t.f===state.feeder);
+  const names = [...new Set(DATA.tasks.map(t=>t.s))].sort();
+  let html='';
+  names.forEach(s=>{
+    const list = base.filter(t=>t.s===s);
+    if(!list.length) return;
+    const p = wprog(list);
+    const od = list.filter(isOver).length;
+    const sel = state.stage===s;
+    html += `<div class="stage-row ${sel?'sel':''}" data-s="${esc(s)}" role="button" tabindex="0" aria-pressed="${sel}">
+      <span class="nm" title="${esc(s)}">${esc(s)}</span>
+      <span class="track"><span class="fill" style="width:${p.act.toFixed(1)}%"></span><span class="plan" style="left:${Math.min(99.5,p.plan).toFixed(1)}%"></span></span>
+      <span class="pcts num"><b>${p.act.toFixed(1)}%</b> <span style="color:var(--mut)">/ ${p.plan.toFixed(0)}%</span></span>
+      ${od?`<span class="badge-od num" title="${od} overdue">${od}</span>`:'<span></span>'}
+    </div>`;
+  });
+  $('#stages').innerHTML = html;
+  $('#stages').querySelectorAll('.stage-row').forEach(r=>{
+    const act = ()=>{ state.stage = state.stage===r.dataset.s ? 'ALL' : r.dataset.s; $('#fStage').value=state.stage; render(); };
+    r.addEventListener('click', act);
+    r.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();act();} });
+  });
+}
+
+/* ---------- tracker ---------- */
+const STEPS = [
+  ['eng','Design'],['pr','PR'],['vf','Vendor'],['po','PO'],['pay','Payment'],
+  ['mfg','Manufacturing'],['fat','FAT'],['mdcc','MDCC'],['rec','At Site'],['exec','Execution']
+];
+function cellOver(c){ return c && c.st!=='C' && c.pe && d2n(c.pe)<TODAY; }
+function rowDelayed(row, fk){ const c=row.feeders[fk]||row.feeders.ALL; return STEPS.some(([k])=>cellOver(c[k])); }
+
+function cellHTML(c, stepName, pkg){
+  if(!c) return '<td class="cell"><span class="dash">—</span></td>';
+  const od = cellOver(c);
+  const qty = (c.q>0) ? `<div class="qty num">${fmtQ(c.aq)} / ${fmtQ(c.q)} ${esc(c.u||'')}</div>` : (c.pc>0&&c.pc<100?`<div class="qty num">${c.pc}%</div>`:'');
+  const dt = c.st==='C' ? `<div class="dt num">done ${fmtD(c.pe)}</div>` : `<div class="dt num">${od?'was due ':'due '}${fmtD(c.pe)}</div>`;
+  return `<td class="cell ${od?'od':''}" data-tip="${esc(pkg)}|${esc(stepName)}|${c.st}|${c.pc}|${fmtQ(c.aq)} / ${fmtQ(c.q)} ${esc(c.u||'')}|${fmtD(c.ps)}|${fmtD(c.pe)}|${od?daysOverCell(c):''}">
+    <span class="st ${c.st}">${ST_LABEL[c.st]}${c.inh?'<span class="inh">·pkg</span>':''}</span>${qty}${dt}</td>`;
+}
+function daysOverCell(c){ return Math.round((TODAY-d2n(c.pe))/MS); }
+
+function renderTracker(){
+  const fk = state.feeder==='ALL' ? 'ALL' : state.feeder;
+  let rows = DATA.tracker.filter(r => !state.trSearch || r.name.toLowerCase().includes(state.trSearch));
+  if(state.trDelay) rows = rows.filter(r=>rowDelayed(r,fk));
+  // sort: most overdue steps first, then name
+  const odCount = r => { const c=r.feeders[fk]||r.feeders.ALL; return STEPS.reduce((a,[k])=>a+(cellOver(c[k])?1:0),0); };
+  rows.sort((a,b)=> odCount(b)-odCount(a) || a.name.localeCompare(b.name));
+
+  // funnel
+  const all = DATA.tracker;
+  let fun='';
+  STEPS.forEach(([k,label])=>{
+    const app = all.filter(r=>r.feeders.ALL[k]);
+    const done = app.filter(r=>r.feeders.ALL[k].st==='C').length;
+    const strt = app.filter(r=>r.feeders.ALL[k].st==='S').length;
+    const pct = app.length? done/app.length*100 : 0;
+    fun += `<div class="fstep"><div class="fs-l">${label}</div>
+      <div class="fs-v num">${done}<small> /${app.length} done${strt?' · '+strt+' live':''}</small></div>
+      <div class="fs-bar"><i style="width:${pct}%"></i></div></div>`;
+  });
+  $('#funnel').innerHTML = fun;
+
+  let html = '<thead><tr><th>Supply package</th>' + STEPS.map(s=>'<th>'+s[1]+'</th>').join('') + '</tr></thead><tbody>';
+  rows.forEach(r=>{
+    const open = !!state.open[r.name];
+    const c = r.feeders[fk] || r.feeders.ALL;
+    html += `<tr><td><span class="pkg ${open?'open':''}" data-pkg="${esc(r.name)}" role="button" tabindex="0"><span class="chev">▶</span><span>${esc(r.name)}</span></span></td>`;
+    STEPS.forEach(([k,label])=> html += cellHTML(c[k], label, r.name));
+    html += '</tr>';
+    if(open){
+      ['F1','F2','F3','F4','MCR','CMN'].forEach(f=>{
+        const fc = r.feeders[f];
+        if(!fc) return;
+        html += `<tr class="sub"><td>${f==='CMN'?'Common':f==='MCR'?'MCR':'Feeder '+f[1]}</td>`;
+        STEPS.forEach(([k,label])=> html += cellHTML(fc[k], label, r.name+' · '+f));
+        html += '</tr>';
+      });
+    }
+  });
+  html += '</tbody>';
+  $('#trackerTable').innerHTML = html;
+  $('#trCount').textContent = rows.length + ' of ' + DATA.tracker.length + ' packages' + (fk!=='ALL'? ' · showing '+(fk==='CMN'?'Common':fk)+' cells':'');
+  $('#trackerTable').querySelectorAll('.pkg').forEach(p=>{
+    const act=()=>{ state.open[p.dataset.pkg]=!state.open[p.dataset.pkg]; renderTracker(); };
+    p.addEventListener('click', act);
+    p.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();act();} });
+  });
+  $('#trackerTable').querySelectorAll('td.cell[data-tip]').forEach(td=>{
+    td.addEventListener('mousemove', e=>{
+      const [pkg,step,st,pc,qty,ps,pe,od] = td.dataset.tip.split('|');
+      showTip(`<div class="t-h">${esc(pkg)} — ${esc(step)}</div>
+        <div class="t-r"><span>Status</span><b>${ST_LABEL[st]||st}</b></div>
+        <div class="t-r"><span>Progress</span><b class="num">${pc}%</b></div>
+        <div class="t-r"><span>Quantity</span><b class="num">${qty}</b></div>
+        <div class="t-r"><span>Window</span><b class="num">${ps} → ${pe}</b></div>
+        ${od?`<div class="t-r"><span>Overdue</span><b class="num" style="color:var(--crit-text)">${od} days</b></div>`:''}`, e.clientX, e.clientY);
+    });
+    td.addEventListener('mouseleave', hideTip);
+  });
+}
+
+/* ---------- watchlist ---------- */
+function renderWatch(){
+  const list = scope();
+  const over = list.filter(isOver).sort((a,b)=>daysLate(b)-daysLate(a));
+  const crit = list.filter(t=>t.cr && t.st!=='C').sort((a,b)=>(a.pe||'').localeCompare(b.pe||''));
+  const modes = [['all','All issues ('+(over.length+crit.filter(t=>!isOver(t)).length)+')'],['over','Overdue ('+over.length+')'],['crit','Critical path ('+crit.length+')']];
+  $('#wlChips').innerHTML = modes.map(([k,l])=>`<button class="wchip ${state.wlMode===k?'on':''}" data-m="${k}">${l}</button>`).join('');
+  $('#wlChips').querySelectorAll('.wchip').forEach(b=>b.addEventListener('click',()=>{state.wlMode=b.dataset.m; renderWatch();}));
+  let rows = state.wlMode==='over'? over : state.wlMode==='crit'? crit : [...over, ...crit.filter(t=>!isOver(t))];
+  const total = rows.length;
+  rows = rows.slice(0,120);
+  let html = '<thead><tr><th>Activity</th><th>Stage</th><th>Package / trade</th><th>Owner</th><th>Planned finish</th><th>Late</th><th>Status</th></tr></thead><tbody>';
+  if(!rows.length) html += '<tr><td colspan="7" style="color:var(--mut);padding:16px">Nothing in scope — clear filters to widen.</td></tr>';
+  rows.forEach(t=>{
+    const dl = daysLate(t);
+    html += `<tr>
+      <td style="max-width:230px">${t.cr?'<span title="Critical activity" style="color:var(--crit);font-weight:700">⚑ </span>':''}${esc(t.n)}</td>
+      <td style="white-space:nowrap">${esc(t.s)}</td>
+      <td style="max-width:180px;color:var(--ink2)">${esc(t.r||t.tr||'')}</td>
+      <td style="white-space:nowrap;color:var(--ink2)">${esc(t.o||'—')}</td>
+      <td class="num" style="white-space:nowrap">${fmtD(t.pe)}</td>
+      <td class="num">${dl>0? `<span class="late">${dl}d</span>`:'—'}</td>
+      <td><span class="st ${t.st}">${ST_LABEL[t.st]}</span></td></tr>`;
+  });
+  html += '</tbody>';
+  $('#wlTable').innerHTML = html;
+  $('#wlNote').textContent = total>120? 'Showing first 120 of '+total+' — use the stage / feeder filters to narrow down.' : '';
+}
+
+/* ---------- feeders ---------- */
+function renderFeeders(){
+  const defs = [['F1','Feeder 1'],['F2','Feeder 2'],['F3','Feeder 3'],['F4','Feeder 4'],['MCR','MCR'],['CMN','Common']];
+  const stageBase = t => state.stage==='ALL' || t.s===state.stage;
+  const discs = ['04 Civil','05 MMS','06 Module','07 DC Cabling','09 HT/IDT','13 BOP'];
+  let html='';
+  defs.forEach(([f,label])=>{
+    const list = DATA.tasks.filter(t=>t.f===f && stageBase(t));
+    if(!list.length) return;
+    const p = wprog(list);
+    const gap = p.act-p.plan;
+    let mini='';
+    discs.forEach(s=>{
+      const dl = DATA.tasks.filter(t=>t.f===f && t.s===s);
+      if(!dl.length) return;
+      const dp = wprog(dl);
+      mini += `<div class="mrow"><span title="${esc(s)}">${esc(s.slice(3))}</span><span class="mtrack"><i style="width:${dp.act.toFixed(0)}%"></i></span><span class="mv num">${dp.act.toFixed(0)}%</span></div>`;
+    });
+    const sel = state.feeder===f;
+    html += `<div class="fcard ${sel?'sel':''}" data-f="${f}" role="button" tabindex="0" aria-pressed="${sel}">
+      <div class="fname">${label} ${gap<-1?`<span class="pill crit num">${gap.toFixed(0)} pts</span>`:''}</div>
+      <div class="fpct num">${p.act.toFixed(1)}%</div>
+      <div class="fplan num">plan ${p.plan.toFixed(1)}% · ${list.length} activities</div>
+      <div class="mini">${mini}</div></div>`;
+  });
+  $('#feeders').innerHTML = html;
+  $('#feeders').querySelectorAll('.fcard').forEach(c=>{
+    const act=()=>{ state.feeder = state.feeder===c.dataset.f? 'ALL': c.dataset.f; $('#fFeeder').value=state.feeder; render(); };
+    c.addEventListener('click', act);
+    c.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();act();} });
+  });
+}
+
+/* ---------- constraints ---------- */
+function renderCons(){
+  const cs = DATA.constraints;
+  if(!cs.length){ $('#cons').innerHTML = '<p class="hint">No open constraints.</p>'; return; }
+  $('#cons').innerHTML = cs.map(c=>{
+    const od = !c.done && c.target && d2n(c.target)<TODAY;
+    const dl = od? Math.round((TODAY-d2n(c.target))/MS) : 0;
+    return `<div class="con" style="border-left-color:${c.done?'var(--good)':od?'var(--crit)':'var(--warn)'}">
+      <div class="ct">${esc(c.title)}
+        <span class="pill ${c.pri==='High'?'crit':'med'}">${esc(c.pri||'')}</span>
+        ${od?`<span class="pill crit num">${dl}d overdue</span>`:''}</div>
+      <div class="cm num">${esc(c.cat||'')} · owner ${esc(c.owner||'—')} (${esc(c.org||'')}) · raised ${fmtD(c.created)} · target ${fmtD(c.target)}${c.done?' · resolved '+fmtD(c.done):''}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- boot ---------- */
+function render(){
+  renderKPIs(); renderSCurve(); renderStages(); renderTracker(); renderWatch(); renderFeeders(); renderCons();
+}
+(function init(){
+  $('#asof').textContent = fmtD(AS_OF);
+  $('#genat').textContent = 'generated ' + new Date(DATA.generatedAt).toLocaleString();
+  const stages = [...new Set(DATA.tasks.map(t=>t.s))].sort();
+  $('#fStage').innerHTML = '<option value="ALL">All stages</option>' + stages.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  $('#fStage').addEventListener('change', e=>{ state.stage=e.target.value; render(); });
+  $('#fFeeder').addEventListener('change', e=>{ state.feeder=e.target.value; render(); });
+  $('#trSearch').addEventListener('input', e=>{ state.trSearch=e.target.value.trim().toLowerCase(); renderTracker(); });
+  $('#trDelay').addEventListener('change', e=>{ state.trDelay=e.target.checked; renderTracker(); });
+  render();
+})();
+</script>

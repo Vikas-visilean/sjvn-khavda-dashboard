@@ -1,0 +1,6 @@
+# never commit API capability URLs or raw API data (contains employee emails)
+visilean.config.json
+data/
+
+# local artifact fragment (index.html is the published form)
+dashboard.html
