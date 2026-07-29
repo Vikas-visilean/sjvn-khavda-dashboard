@@ -164,6 +164,20 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 #tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--ink2)}
 #tip .t-r b{color:var(--ink);font-weight:600}
 
+/* ---------- refresh & toast ---------- */
+#btnRefresh{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:6.5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+#btnRefresh:hover{filter:brightness(1.08)}
+#btnRefresh:disabled{opacity:.55;cursor:wait}
+#btnRefresh .ico{font-size:14px;line-height:1;display:inline-block}
+#btnRefresh.busy .ico{animation:vlspin 1s linear infinite}
+@keyframes vlspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){#btnRefresh.busy .ico{animation:none}}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;max-width:min(580px,92vw);background:var(--surface);border:1px solid var(--line2);border-left:3px solid var(--blue);border-radius:9px;padding:10px 16px;font-size:12.5px;line-height:1.5;color:var(--ink);box-shadow:0 6px 22px rgba(0,0,0,.18);display:none}
+#toast.good{border-left-color:var(--good)}
+#toast.warn{border-left-color:var(--warn)}
+#toast.crit{border-left-color:var(--crit)}
+#toast a{color:var(--blue)}
+
 section{margin-top:14px}
 .span8{grid-column:span 8}.span4{grid-column:span 4}.span12{grid-column:span 12}.span7{grid-column:span 7}.span5{grid-column:span 5}
 @media(max-width:1000px){.span8,.span4,.span7,.span5{grid-column:span 12}}
@@ -185,6 +199,7 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
         <option value="ALL">All feeders</option><option value="F1">Feeder 1</option><option value="F2">Feeder 2</option>
         <option value="F3">Feeder 3</option><option value="F4">Feeder 4</option><option value="MCR">MCR</option><option value="CMN">Common</option>
       </select></div>
+      <div><label aria-hidden="true">&nbsp;</label><button id="btnRefresh" title="Refresh data live from the VisiLean API"><span class="ico" aria-hidden="true">↻</span> Refresh</button></div>
     </div>
   </header>
 
@@ -249,17 +264,19 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
   </footer>
 </div>
 <div id="tip"></div>
+<div id="toast" role="status"></div>
 
+<script>/*__PROCESSOR__*/</script>
 <script>
-const DATA = "__DATA__";
-const AS_OF = DATA.asOf;
+let DATA = "__DATA__";
+let AS_OF = DATA.asOf;
 const $ = s => document.querySelector(s);
 const state = { stage:'ALL', feeder:'ALL', wlMode:'all', trSearch:'', trDelay:false, open:{} };
 
 /* ---------- helpers ---------- */
 const MS = 86400000;
 const d2n = s => s ? Date.parse(s + 'T00:00:00Z') : null;
-const TODAY = d2n(AS_OF);
+let TODAY = d2n(AS_OF);
 function dur(t){ const a=d2n(t.ps), b=d2n(t.pe); if(a==null||b==null) return 1; return Math.max(1,(b-a)/MS+1); }
 function planFrac(t){ const a=d2n(t.ps), b=d2n(t.pe); if(a==null||b==null) return 0; if(TODAY>=b) return 1; if(TODAY<=a) return 0; return (TODAY-a)/(b-a); }
 function isOver(t){ const b=d2n(t.pe); return b!=null && b<TODAY && t.st!=='C'; }
@@ -642,15 +659,102 @@ function renderCons(){
 function render(){
   renderKPIs(); renderSCurve(); renderStages(); renderTracker(); renderWatch(); renderFeeders(); renderCons();
 }
-(function init(){
-  $('#asof').textContent = fmtD(AS_OF);
-  $('#genat').textContent = 'generated ' + new Date(DATA.generatedAt).toLocaleString();
-  const stages = [...new Set(DATA.tasks.map(t=>t.s))].sort();
+function applyData(d, live){
+  DATA = d; AS_OF = d.asOf; TODAY = d2n(AS_OF);
+  $('#asof').textContent = fmtD(AS_OF) + (live ? ' · live' : '');
+  $('#genat').textContent = (live ? 'refreshed live in browser ' : 'generated ') + new Date(d.generatedAt).toLocaleString();
+  const cur = $('#fStage').value;
+  const stages = [...new Set(d.tasks.map(t=>t.s))].sort();
   $('#fStage').innerHTML = '<option value="ALL">All stages</option>' + stages.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  $('#fStage').value = stages.includes(cur) || cur==='ALL' ? cur : 'ALL';
+  state.stage = $('#fStage').value;
+}
+
+/* ---------- live refresh from the VisiLean API ---------- */
+let toastTimer = null;
+function toast(html, kind, sticky){
+  const el = $('#toast');
+  el.className = kind || '';
+  el.innerHTML = html;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  if(!sticky) toastTimer = setTimeout(()=>{ el.style.display='none'; }, 9000);
+}
+function apiConfig(){
+  // sources, in priority order: URL query params, URL hash params, saved browser config
+  const out = {};
+  [new URLSearchParams(location.search), new URLSearchParams(location.hash.replace(/^#/,''))].forEach(p=>{
+    out.tasks = out.tasks || p.get('tasksUrl') || p.get('t');
+    out.constraints = out.constraints || p.get('constraintsUrl') || p.get('c');
+  });
+  if(out.tasks && out.constraints){
+    try{ localStorage.setItem('vl-api', JSON.stringify(out)); }catch(e){}
+    return out;
+  }
+  try{ const s = JSON.parse(localStorage.getItem('vl-api')||'null'); if(s && s.tasks && s.constraints) return s; }catch(e){}
+  return null;
+}
+// console helper: setVisiLeanApi('<tasks url>', '<constraints url>')
+window.setVisiLeanApi = function(t, c){
+  localStorage.setItem('vl-api', JSON.stringify({tasks:t, constraints:c}));
+  toast('API endpoints saved in this browser. Click Refresh to pull live data.', 'good');
+};
+async function fetchJson(url){
+  const res = await fetch(url, { cache:'no-store' });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+const ACTIONS_URL = 'https://github.com/Vikas-visilean/sjvn-khavda-dashboard/actions/workflows/refresh.yml';
+async function checkNewerBuild(){
+  if(!/^https?:/.test(location.protocol)) return 'unsupported';
+  const res = await fetch(location.pathname + '?v=' + Date.now(), { cache:'no-store' });
+  const txt = await res.text();
+  const m = txt.match(/"generatedAt":"([^"]+)"/);
+  if(m && m[1] !== DATA.generatedAt) return 'newer';
+  return 'same';
+}
+async function refreshLive(){
+  const btn = $('#btnRefresh');
+  btn.disabled = true; btn.classList.add('busy');
+  const cfg = apiConfig();
+  try{
+    if(cfg){
+      try{
+        const [t, c] = await Promise.all([fetchJson(cfg.tasks), fetchJson(cfg.constraints)]);
+        const d = VLProc.buildData(t, c, new Date());
+        applyData(d, true); render();
+        toast('Refreshed live from VisiLean — ' + d.tasks.length + ' activities, ' + new Date().toLocaleTimeString() + '.', 'good');
+        return;
+      }catch(e){
+        // CORS / network / auth failure -> fall through to published-build check
+        console.warn('Live API refresh failed:', e);
+        var liveFailed = true;
+      }
+    }
+    const chk = await checkNewerBuild().catch(()=> 'error');
+    if(chk === 'newer'){ toast('A newer published build is available — reloading…', 'good'); setTimeout(()=>location.reload(), 800); return; }
+    const why = cfg
+      ? 'The VisiLean API refused this origin (CORS). Ask VisiLean to allowlist <b>' + esc(location.origin) + '</b> for direct live refresh.'
+      : 'No API endpoints are configured for direct live refresh in this browser.';
+    toast(why + ' You are on the latest published build (' + esc(new Date(DATA.generatedAt).toLocaleString()) + '), which auto-rebuilds daily — or <a href="' + ACTIONS_URL + '" target="_blank" rel="noopener">trigger a rebuild now</a>.', liveFailed ? 'warn' : '', true);
+  } finally {
+    btn.disabled = false; btn.classList.remove('busy');
+  }
+}
+
+(function init(){
+  applyData(DATA, false);
   $('#fStage').addEventListener('change', e=>{ state.stage=e.target.value; render(); });
   $('#fFeeder').addEventListener('change', e=>{ state.feeder=e.target.value; render(); });
   $('#trSearch').addEventListener('input', e=>{ state.trSearch=e.target.value.trim().toLowerCase(); renderTracker(); });
   $('#trDelay').addEventListener('change', e=>{ state.trDelay=e.target.checked; renderTracker(); });
+  $('#btnRefresh').addEventListener('click', refreshLive);
   render();
+  const qs = new URLSearchParams(location.search);
+  // auto live-refresh on load when endpoints are configured (disable with ?live=0)
+  if(apiConfig() && qs.get('live') !== '0') refreshLive();
+  // optional periodic refresh: ?refresh=<minutes>
+  const iv = parseFloat(qs.get('refresh'));
+  if(iv > 0) setInterval(refreshLive, Math.max(5, iv) * 60000);
 })();
 </script>

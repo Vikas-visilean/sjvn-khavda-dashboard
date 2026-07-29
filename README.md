@@ -9,6 +9,31 @@ project, generated from the VisiLean PowerBI API and published via GitHub Pages.
 - **Embedding:** the page sends no frame-blocking headers, so it can be embedded
   in an iframe
 
+## Refresh button (live data)
+
+The header has a **Refresh** button with three behaviors, in order:
+
+1. **Direct live refresh** — if API endpoints are configured in the browser, the
+   page fetches both VisiLean endpoints, reprocesses the WBS client-side
+   (`processor.js` is embedded in the page) and re-renders with a new data date.
+   Configure endpoints one of these ways:
+   - query/hash params on the embed URL:
+     `index.html?tasksUrl=<url>&constraintsUrl=<url>` (also `#tasksUrl=…` — hash
+     params never reach server logs). Saved to `localStorage` after first use.
+   - browser console: `setVisiLeanApi('<tasks url>', '<constraints url>')`
+   - auto-refresh on load happens whenever endpoints are configured
+     (disable with `?live=0`); add `?refresh=<minutes>` for periodic refresh.
+
+   ⚠️ Direct refresh requires the VisiLean API to allow this page's origin —
+   the API is CORS-allowlisted (e.g. `https://web.visilean.net` is allowed).
+   Ask VisiLean to add the hosting origin (e.g.
+   `https://vikas-visilean.github.io`) to the allowlist.
+
+2. **Newer-build check** — if live fetch isn't possible, the button checks
+   whether CI has published a newer build and reloads if so.
+
+3. **Guidance** — otherwise it explains why and links to the rebuild workflow.
+
 ## How it works
 
 `build-dashboard.js` fetches the tasks/history and constraint-log endpoints,
