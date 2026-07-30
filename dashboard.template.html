@@ -165,6 +165,13 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 #tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--ink2)}
 #tip .t-r b{color:var(--ink);font-weight:600}
 
+/* ---------- theme segmented control ---------- */
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;background:var(--surface);overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink2);font:inherit;font-size:12px;font-weight:500;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.seg button + button{border-left:1px solid var(--line)}
+.seg button:hover{background:var(--nr-wash)}
+.seg button.on{background:var(--ink);color:var(--surface);font-weight:600}
+
 /* ---------- refresh & toast ---------- */
 #btnRefresh{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:6.5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 #btnRefresh:hover{filter:brightness(1.08)}
@@ -201,6 +208,13 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
         <option value="F3">Feeder 3</option><option value="F4">Feeder 4</option><option value="MCR">MCR</option><option value="CMN">Common</option>
       </select></div>
       <div><label aria-hidden="true">&nbsp;</label><button id="btnRefresh" title="Refresh data live from the VisiLean API"><span class="ico" aria-hidden="true">↻</span> Refresh</button></div>
+      <div><label for="themeSeg">Theme</label>
+        <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
+          <button data-t="auto" title="Follow system setting">Auto</button>
+          <button data-t="light" title="Light theme">☀ Light</button>
+          <button data-t="dark" title="Dark theme">🌙 Dark</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -766,7 +780,17 @@ async function refreshLive(){
   }
 }
 
+/* ---------- theme toggle (auto / light / dark) ---------- */
+function setTheme(mode){
+  if(mode === 'light' || mode === 'dark') document.documentElement.dataset.theme = mode;
+  else { delete document.documentElement.dataset.theme; mode = 'auto'; }
+  try{ localStorage.setItem('vl-theme', mode); }catch(e){}
+  document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on', b.dataset.t === mode));
+}
+
 (function init(){
+  setTheme((()=>{ try{ return localStorage.getItem('vl-theme') || 'auto'; }catch(e){ return 'auto'; } })());
+  document.querySelectorAll('#themeSeg button').forEach(b=>b.addEventListener('click', ()=>setTheme(b.dataset.t)));
   applyData(DATA, false);
   $('#fStage').addEventListener('change', e=>{ state.stage=e.target.value; render(); });
   $('#fFeeder').addEventListener('change', e=>{ state.feeder=e.target.value; render(); });
