@@ -249,7 +249,7 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
       <div class="wl-note" id="wlNote"></div>
     </div>
     <div class="card span5">
-      <div class="cardhead"><div><h2>Feeder Scorecard</h2><p class="hint">Duration-weighted progress vs plan · click to filter</p></div></div>
+      <div class="cardhead"><div><h2>Feeder Scorecard</h2><p class="hint">Site execution only (stages 04–16), duration-weighted vs plan · click to filter</p></div></div>
       <div class="fgrid" id="feeders"></div>
       <div style="margin-top:14px">
         <h2 style="font-size:13.5px;margin:0 0 2px">Open Constraints</h2>
@@ -260,7 +260,7 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
   </div>
 
   <footer>
-    <div><b>Method.</b> Progress is duration-weighted: each activity contributes its planned duration in days; Plan % prorates activities linearly between planned start and finish as of the data date; SPI = cumulative actual ÷ cumulative plan. Forecast dates shown are planned finish dates from the live schedule. Source: VisiLean PowerBI API (tasks &amp; constraint log), <span id="genat"></span>.</div>
+    <div><b>Method.</b> Duplicate rows in the API feed are removed (unique task IDs only). Progress is duration-weighted: each activity contributes its planned duration in days; Plan % prorates activities linearly between planned start and finish as of the data date; SPI = cumulative actual ÷ cumulative plan. The Feeder Scorecard covers site execution stages (04 Civil → 16 Close-out) only — procurement readiness is tracked in the pipeline above. Forecast dates shown are planned finish dates from the live schedule. Source: VisiLean PowerBI API (tasks &amp; constraint log), <span id="genat"></span>.</div>
     <div style="margin-top:4px">To refresh with live data, run <code>node build-dashboard.js</code> in the project folder and reopen this file.</div>
   </footer>
 </div>
@@ -610,11 +610,14 @@ function renderWatch(){
 /* ---------- feeders ---------- */
 function renderFeeders(){
   const defs = [['F1','Feeder 1'],['F2','Feeder 2'],['F3','Feeder 3'],['F4','Feeder 4'],['MCR','MCR'],['CMN','Common']];
+  // site execution scope only (stages 04 Civil .. 16 Close-out) — procurement
+  // readiness lives in the pipeline tracker, matching VisiLean's feeder tiles
+  const isSite = t => { const n = parseInt(t.s, 10); return n >= 4 && n <= 16; };
   const stageBase = t => state.stage==='ALL' || t.s===state.stage;
   const discs = ['04 Civil','05 MMS','06 Module','07 DC Cabling','09 HT/IDT','13 BOP'];
   let html='';
   defs.forEach(([f,label])=>{
-    const list = DATA.tasks.filter(t=>t.f===f && stageBase(t));
+    const list = DATA.tasks.filter(t=>t.f===f && stageBase(t) && isSite(t));
     if(!list.length) return;
     const p = wprog(list);
     const gap = p.act-p.plan;
@@ -636,7 +639,7 @@ function renderFeeders(){
     html += `<div class="fcard ${sel?'sel':''}" data-f="${f}" role="button" tabindex="0" aria-pressed="${sel}">
       <div class="fname">${label} ${gap<-1?`<span class="pill crit num">${gap.toFixed(0)} pts</span>`:''}</div>
       <div class="fpct num">${p.act.toFixed(1)}%</div>
-      <div class="fplan num">plan ${p.plan.toFixed(1)}% · ${list.length} activities</div>
+      <div class="fplan num">plan ${p.plan.toFixed(1)}% · ${list.length} site activities</div>
       <div class="mini">${mini}</div></div>`;
   });
   $('#feeders').innerHTML = html;

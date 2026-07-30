@@ -111,7 +111,15 @@
       return p ? (p.taskName || '').replace(/\s*\((F\d|MCR|CD|SPLY|GTP|DA)\)\s*$/, '').trim() : '';
     }
 
-    const leaves = tasks.filter(t => !t.parent);
+    // the feed contains duplicate rows (same taskId exported twice) — keep the first
+    const seenIds = new Set();
+    const leaves = tasks.filter(t => {
+      if (t.parent) return false;
+      const id = t.taskId || t.guid;
+      if (seenIds.has(id)) return false;
+      seenIds.add(id);
+      return true;
+    });
     const L = leaves.map(t => {
       const chain = chainOf(t);
       const stage = (t.customField || {})['Parent Task'] || (chain[1] ? chain[1].taskName : '') || 'Other';
