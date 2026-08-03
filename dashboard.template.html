@@ -165,6 +165,22 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 #tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--ink2)}
 #tip .t-r b{color:var(--ink);font-weight:600}
 
+/* ---------- plant layout map ---------- */
+#layout svg{max-width:1080px;margin:0 auto}
+.lay-plot{fill:none;stroke:var(--ink2);stroke-width:1.6}
+.lay-feeder{cursor:pointer}
+.lay-feeder polygon,.lay-feeder rect{stroke:#e05fa0;stroke-width:1.5;transition:fill-opacity .15s}
+.lay-feeder:hover polygon,.lay-feeder:hover rect{fill-opacity:.95;stroke-width:2.2}
+.lay-feeder.sel polygon,.lay-feeder.sel rect{stroke:var(--blue);stroke-width:3}
+.lay-feeder:focus-visible{outline:none}
+.lay-feeder:focus-visible polygon,.lay-feeder:focus-visible rect{stroke:var(--blue);stroke-width:3;stroke-dasharray:6 3}
+.lay-a{font-size:14px;font-weight:700;fill:var(--ink)}
+.lay-p{font-size:12px;fill:var(--ink2)}
+.lay-n{font-size:12px;font-weight:600;fill:var(--mut);letter-spacing:.02em}
+.lay-up{fill:var(--good-text)}
+.lay-dn{fill:var(--crit)}
+.legend .sw.box{width:12px;height:12px;border-radius:3px}
+
 /* ---------- theme segmented control ---------- */
 .seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;background:var(--surface);overflow:hidden}
 .seg button{border:0;background:transparent;color:var(--ink2);font:inherit;font-size:12px;font-weight:500;padding:6px 11px;cursor:pointer;white-space:nowrap}
@@ -219,6 +235,14 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
   </header>
 
   <div class="kpis" id="kpis"></div>
+
+  <section class="card span12" style="margin:0 0 14px">
+    <div class="cardhead"><div><h2>Plant Layout — Feeder Progress</h2>
+      <p class="hint">Site execution progress by location · click a feeder/block to filter the whole dashboard</p></div>
+      <div class="legend" id="layLegend" style="margin:0"></div>
+    </div>
+    <div class="chart" id="layout"></div>
+  </section>
 
   <div class="grid">
     <div class="card span8">
@@ -677,6 +701,77 @@ function renderFeeders(){
   });
 }
 
+/* ---------- plant layout map ---------- */
+const isSiteStage = t => { const n = parseInt(t.s, 10); return n >= 4 && n <= 16; };
+function siteAgg(f){
+  const list = DATA.tasks.filter(t=>t.f===f && isSiteStage(t) && (state.stage==='ALL' || t.s===state.stage));
+  const p = wprog(list);
+  return { act:p.act, plan:p.plan, n:list.length,
+    done:list.filter(t=>t.st==='C').length, live:list.filter(t=>t.st==='S').length };
+}
+const LAY_BANDS = [
+  { min:100, c:'#12a67c', label:'Progress = 100%' },
+  { min:75,  c:'#4caf50', label:'Progress ≥ 75%' },
+  { min:40,  c:'#f2a71b', label:'Progress ≥ 40%' },
+  { min:1e-9,c:'#ed7d31', label:'Progress > 0%' },
+];
+function layFill(p){ const b = LAY_BANDS.find(b=>p>=b.min); return b ? b.c : 'none'; }
+const LAY_GEO = {
+  plots: [
+    '40,120 520,120 520,345 40,345',
+    '560,45 952,45 1010,345 560,345',
+  ],
+  blocks: [
+    { f:'F1', name:'Feeder-1', pts:'50,130 510,130 510,228 50,228',  cx:280, cy:170 },
+    { f:'F2', name:'Feeder-2', pts:'50,238 510,238 510,335 50,335',  cx:280, cy:278 },
+    { f:'F3', name:'Feeder-3', pts:'570,55 942,55 968,190 570,190',  cx:765, cy:114 },
+    { f:'F4', name:'Feeder-4', pts:'570,200 970,200 995,335 570,335',cx:775, cy:259 },
+    { f:'MCR', name:'MCR', rect:[524,284,32,32], cx:540, cy:296, small:true },
+  ],
+};
+function renderLayout(){
+  $('#layLegend').innerHTML = LAY_BANDS.map(b=>`<span class="li"><span class="sw box" style="background:${b.c}"></span>${b.label}</span>`).join('') +
+    `<span class="li"><span class="sw box" style="background:transparent;border:1.5px solid #e05fa0"></span>Not started</span>`;
+  let svg = '';
+  LAY_GEO.plots.forEach(p=> svg += `<polygon class="lay-plot" points="${p}"/>`);
+  LAY_GEO.blocks.forEach(b=>{
+    const a = siteAgg(b.f);
+    const fill = layFill(a.act);
+    const filled = fill !== 'none';
+    const up = a.act >= a.plan;
+    const sel = state.feeder === b.f;
+    const shape = b.rect
+      ? `<rect x="${b.rect[0]}" y="${b.rect[1]}" width="${b.rect[2]}" height="${b.rect[3]}" fill="${filled?fill:'transparent'}" fill-opacity="${filled?0.82:1}"/>`
+      : `<polygon points="${b.pts}" fill="${filled?fill:'transparent'}" fill-opacity="${filled?0.82:1}"/>`;
+    const label = b.small
+      ? `<text class="lay-n" x="${b.cx}" y="${b.rect[1]+b.rect[3]+14}" text-anchor="middle">MCR</text>
+         <text class="lay-p num" x="${b.cx}" y="${b.rect[1]+b.rect[3]+28}" text-anchor="middle">${a.act.toFixed(0)}%</text>`
+      : `<text class="lay-a num" x="${b.cx}" y="${b.cy-6}" text-anchor="middle">A: ${a.act.toFixed(1)}% <tspan class="${up?'lay-up':'lay-dn'}">${up?'▲':'▼'}</tspan></text>
+         <text class="lay-p num" x="${b.cx}" y="${b.cy+13}" text-anchor="middle">P: ${a.plan.toFixed(1)}%</text>
+         <text class="lay-n" x="${b.cx}" y="${b.cy+32}" text-anchor="middle">${esc(b.name)}</text>`;
+    svg += `<g class="lay-feeder ${sel?'sel':''}" data-f="${b.f}" role="button" tabindex="0"
+      aria-label="${esc(b.name)}: actual ${a.act.toFixed(1)} percent, plan ${a.plan.toFixed(1)} percent"
+      data-tip="${esc(b.name)}|${a.act.toFixed(1)}|${a.plan.toFixed(1)}|${a.n}|${a.done}|${a.live}">${shape}${label}</g>`;
+  });
+  $('#layout').innerHTML = `<svg viewBox="0 0 1030 375" role="img" aria-label="Plant layout with feeder progress">${svg}</svg>`;
+  $('#layout').querySelectorAll('.lay-feeder').forEach(g=>{
+    const act = ()=>{ state.feeder = state.feeder===g.dataset.f ? 'ALL' : g.dataset.f; $('#fFeeder').value=state.feeder; render(); };
+    g.addEventListener('click', act);
+    g.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();act();} });
+    g.addEventListener('mousemove', e=>{
+      const [n,a,p,cnt,done,live] = g.dataset.tip.split('|');
+      const gap = (a-p).toFixed(1);
+      showTip(`<div class="t-h">${esc(n)} — site execution</div>
+        <div class="t-r"><span>Actual</span><b class="num">${a}%</b></div>
+        <div class="t-r"><span>Plan</span><b class="num">${p}%</b></div>
+        <div class="t-r"><span>Variance</span><b class="num" style="color:${gap<0?'var(--crit-text)':'var(--good-text)'}">${gap>0?'+':''}${gap} pts</b></div>
+        <div class="t-r"><span>Activities</span><b class="num">${cnt} (${done} done, ${live} live)</b></div>
+        <div class="t-r"><span></span><b style="font-weight:500;color:var(--mut)">${state.feeder===g.dataset.f?'click to clear filter':'click to filter dashboard'}</b></div>`, e.clientX, e.clientY);
+    });
+    g.addEventListener('mouseleave', hideTip);
+  });
+}
+
 /* ---------- constraints ---------- */
 function renderCons(){
   const cs = DATA.constraints;
@@ -695,7 +790,7 @@ function renderCons(){
 
 /* ---------- boot ---------- */
 function render(){
-  renderKPIs(); renderSCurve(); renderStages(); renderTracker(); renderWatch(); renderFeeders(); renderCons();
+  renderKPIs(); renderLayout(); renderSCurve(); renderStages(); renderTracker(); renderWatch(); renderFeeders(); renderCons();
 }
 function applyData(d, live){
   DATA = d; AS_OF = d.asOf; TODAY = d2n(AS_OF);
