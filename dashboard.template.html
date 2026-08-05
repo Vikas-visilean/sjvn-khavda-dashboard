@@ -1,59 +1,92 @@
 <title>SJVN Khavda 200 MW — Executive Review</title>
 <style>
+/* Lean Design System — VisiLean tokens (colors_and_type.css), applied to this dashboard.
+   Inter self-hosted; two working weights only (400/600, brand rule: no bold above 600).
+   Task status colours are the sacred VisiLean wheel — identical hex in light and dark. */
+@font-face{
+  font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;
+  src:url("fonts/inter-var-latin.woff2") format("woff2");
+}
 :root{
   color-scheme: light;
-  --page:#f6f6f2; --surface:#fcfcfb; --ink:#161613; --ink2:#52514e; --mut:#898781;
-  --grid:#e5e4dc; --line:rgba(11,11,11,.09); --line2:rgba(11,11,11,.14);
-  --blue:#2a78d6; --blue-lt:#9ec5f4; --blue-wash:rgba(42,120,214,.10);
-  --good:#0ca30c; --good-text:#006300; --good-wash:rgba(12,163,12,.12);
-  --warn:#fab219; --warn-text:#7a5a00; --warn-wash:rgba(250,178,25,.16);
-  --serious:#ec835a; --crit:#d03b3b; --crit-text:#b32f2f; --crit-wash:rgba(208,59,59,.10);
-  --nr-wash:rgba(11,11,11,.05);
+  /* surfaces & ink — VisiLean neutrals (text never pure black) */
+  --page:#f5f6f8; --surface:#ffffff; --ink:#475057; --ink2:#626e76; --mut:#7e8c96;
+  --grid:#ebeef0; --line:#ebeef0; --line2:#e0e5e9;
+  /* primary — VisiLean blue */
+  --blue:#1793e6; --blue-hov:#0e8bdf; --blue-lt:#a2d4f5; --blue-wash:#e6eff8; --focus:#74bef0;
+  /* semantic feedback */
+  --good:#00a455; --good-text:#008344; --good-wash:#e4fbf3;
+  --warn:#f59e00; --warn-text:#c27d00; --warn-wash:#fef5e5;
+  --serious:#ff944b; --crit:#ff4343; --crit-text:#d13636; --crit-wash:#ffecec;
+  --nr-wash:#ebeef0;
+  /* task status wheel (dots) + per-mode chip bg/fg */
+  --stC-bg:rgba(4,150,46,.10);   --stC-fg:#006233;
+  --stS-bg:rgba(84,27,96,.10);   --stS-fg:#541b60;
+  --stNC-bg:rgba(238,220,29,.20);--stNC-fg:#935f00;
+  --stNR-bg:rgba(255,114,97,.14);--stNR-fg:#a32828;
+  /* constraint states */
+  --con-open:#ff6b6b; --con-committed:#ff944b; --con-closed:#00a455;
+  /* inverted tooltip (shadcn-style) */
+  --tip-bg:#2b3237; --tip-fg:#ffffff; --tip-fg2:#c2ccd3;
+  --shadow-popover:0 8px 24px rgba(16,20,23,.12), 0 0 0 1px rgba(16,20,23,.06);
 }
 @media (prefers-color-scheme: dark){
   :root:where(:not([data-theme="light"])){
     color-scheme: dark;
-    --page:#0f0f0e; --surface:#1a1a19; --ink:#f5f5ee; --ink2:#c3c2b7; --mut:#898781;
-    --grid:#2c2c2a; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
-    --blue:#3987e5; --blue-lt:#1c5cab; --blue-wash:rgba(57,135,229,.16);
-    --good-text:#2fc12f; --good-wash:rgba(12,163,12,.16);
-    --warn-text:#fab219; --warn-wash:rgba(250,178,25,.13);
-    --crit:#e05252; --crit-text:#ef7a7a; --crit-wash:rgba(224,82,82,.14);
-    --nr-wash:rgba(255,255,255,.06);
+    --page:#0E1216; --surface:#161B20; --ink:#F4F6F8; --ink2:#c2ccd3; --mut:#99aab6;
+    --grid:#232A31; --line:#232A31; --line2:#2D353D;
+    --blue:#45a9eb; --blue-hov:#74bef0; --blue-lt:#0e588a; --blue-wash:rgba(23,147,230,.16); --focus:#45a9eb;
+    --good-text:#52c88f; --good-wash:rgba(0,164,85,.16);
+    --warn-text:#f9c566; --warn-wash:rgba(245,158,0,.18);
+    --crit-text:#ff8e8e; --crit-wash:rgba(255,67,67,.16);
+    --nr-wash:#232A31;
+    --stC-bg:rgba(4,150,46,.20);   --stC-fg:#7bdbad;
+    --stS-bg:rgba(84,27,96,.35);   --stS-fg:#d5b3e0;
+    --stNC-bg:rgba(238,220,29,.16);--stNC-fg:#f9c566;
+    --stNR-bg:rgba(255,114,97,.18);--stNR-fg:#ff8e8e;
+    --tip-bg:#F4F6F8; --tip-fg:#2b3237; --tip-fg2:#626e76;
+    --shadow-popover:0 8px 24px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
   }
 }
 :root[data-theme="dark"]{
   color-scheme: dark;
-  --page:#0f0f0e; --surface:#1a1a19; --ink:#f5f5ee; --ink2:#c3c2b7; --mut:#898781;
-  --grid:#2c2c2a; --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
-  --blue:#3987e5; --blue-lt:#1c5cab; --blue-wash:rgba(57,135,229,.16);
-  --good-text:#2fc12f; --good-wash:rgba(12,163,12,.16);
-  --warn-text:#fab219; --warn-wash:rgba(250,178,25,.13);
-  --crit:#e05252; --crit-text:#ef7a7a; --crit-wash:rgba(224,82,82,.14);
-  --nr-wash:rgba(255,255,255,.06);
+  --page:#0E1216; --surface:#161B20; --ink:#F4F6F8; --ink2:#c2ccd3; --mut:#99aab6;
+  --grid:#232A31; --line:#232A31; --line2:#2D353D;
+  --blue:#45a9eb; --blue-hov:#74bef0; --blue-lt:#0e588a; --blue-wash:rgba(23,147,230,.16); --focus:#45a9eb;
+  --good-text:#52c88f; --good-wash:rgba(0,164,85,.16);
+  --warn-text:#f9c566; --warn-wash:rgba(245,158,0,.18);
+  --crit-text:#ff8e8e; --crit-wash:rgba(255,67,67,.16);
+  --nr-wash:#232A31;
+  --stC-bg:rgba(4,150,46,.20);   --stC-fg:#7bdbad;
+  --stS-bg:rgba(84,27,96,.35);   --stS-fg:#d5b3e0;
+  --stNC-bg:rgba(238,220,29,.16);--stNC-fg:#f9c566;
+  --stNR-bg:rgba(255,114,97,.18);--stNR-fg:#ff8e8e;
+  --tip-bg:#F4F6F8; --tip-fg:#2b3237; --tip-fg2:#626e76;
+  --shadow-popover:0 8px 24px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.06);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--page);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;}
+body{background:var(--page);color:var(--ink);font:500 14px/1.45 "Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-feature-settings:"cv11" 1,"tnum" 1;-webkit-font-smoothing:antialiased}
+.icn{width:14px;height:14px;flex:none;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .wrap{max-width:1400px;margin:0 auto;padding:20px 24px 60px}
 .num{font-variant-numeric:tabular-nums}
 
 /* ---------- header ---------- */
 header{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:6px 2px 18px}
 .brand{display:flex;flex-direction:column;gap:2px;margin-right:auto}
-.brand h1{margin:0;font-size:19px;font-weight:650;letter-spacing:-.01em}
+.brand h1{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
 .brand .sub{color:var(--ink2);font-size:12.5px}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--ink2);background:var(--surface)}
 .chip b{color:var(--ink);font-weight:600}
 .filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .filters label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);display:block;margin:0 0 3px 2px}
-select{appearance:none;background:var(--surface);color:var(--ink);border:1px solid var(--line2);border-radius:8px;padding:6px 28px 6px 10px;font:inherit;font-size:13px;cursor:pointer;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%23898781" stroke-width="1.5"/></svg>');background-repeat:no-repeat;background-position:right 10px center}
-select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+select{appearance:none;background:var(--surface);color:var(--ink);border:1px solid var(--line2);border-radius:4px;padding:6px 28px 6px 10px;font:inherit;font-size:13px;cursor:pointer;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" fill="none" stroke="%237e8c96" stroke-width="1.5"/></svg>');background-repeat:no-repeat;background-position:right 10px center}
+select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 /* ---------- cards & grid ---------- */
 .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
-.card h2{margin:0 0 2px;font-size:13.5px;font-weight:650}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 18px;min-width:0}
+.card h2{margin:0 0 2px;font-size:13.5px;font-weight:600}
 .card .hint{color:var(--mut);font-size:11.5px;margin:0 0 12px}
 .cardhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
 
@@ -61,9 +94,9 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 .kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin:0 0 14px}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:720px){.kpis{grid-template-columns:repeat(2,1fr)}.wrap{padding:14px 12px 40px}}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px 15px;display:flex;flex-direction:column;gap:3px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:13px 15px;display:flex;flex-direction:column;gap:3px}
 .kpi .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
-.kpi .val{font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.1}
+.kpi .val{font-size:26px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
 .kpi .sub{font-size:11.5px;color:var(--ink2)}
 .kpi .sub .neg{color:var(--crit-text);font-weight:600}
 .kpi .sub .pos{color:var(--good-text);font-weight:600}
@@ -81,26 +114,27 @@ select:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid 
 .track .plan{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink2);border-radius:1px}
 .stage-row .pcts{font-size:11.5px;color:var(--ink2);text-align:right;white-space:nowrap}
 .stage-row .pcts b{color:var(--ink);font-weight:600}
-.badge-od{font-size:10.5px;font-weight:700;color:var(--crit-text);background:var(--crit-wash);border-radius:999px;padding:1px 6px;justify-self:end}
+.badge-od{font-size:10.5px;font-weight:600;color:var(--crit-text);background:var(--crit-wash);border-radius:999px;padding:1px 6px;justify-self:end}
 
 /* ---------- status chips ---------- */
+/* task status chips — dot carries the sacred VisiLean status-wheel hex (same in both themes) */
 .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;white-space:nowrap}
 .st::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
-.st.C{background:var(--good-wash);color:var(--good-text)}.st.C::before{background:var(--good)}
-.st.S{background:var(--blue-wash);color:var(--blue)}.st.S::before{background:var(--blue)}
-.st.NC{background:var(--warn-wash);color:var(--warn-text)}.st.NC::before{background:var(--warn)}
-.st.NR{background:var(--nr-wash);color:var(--mut)}.st.NR::before{background:var(--mut)}
+.st.C{background:var(--stC-bg);color:var(--stC-fg)}.st.C::before{background:#04962e}
+.st.S{background:var(--stS-bg);color:var(--stS-fg)}.st.S::before{background:#541b60}
+.st.NC{background:var(--stNC-bg);color:var(--stNC-fg)}.st.NC::before{background:#eedc1d}
+.st.NR{background:var(--stNR-bg);color:var(--stNR-fg)}.st.NR::before{background:#ff7261}
 
 /* ---------- tracker ---------- */
 .funnel{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 14px}
 .fstep{flex:1 1 90px;min-width:90px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--page)}
 .fstep .fs-l{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);white-space:nowrap}
-.fstep .fs-v{font-size:17px;font-weight:650;margin-top:2px}
+.fstep .fs-v{font-size:17px;font-weight:600;margin-top:2px}
 .fstep .fs-v small{font-size:11px;color:var(--mut);font-weight:500}
 .fstep .fs-bar{height:4px;border-radius:2px;background:var(--nr-wash);margin-top:6px;position:relative;overflow:hidden}
 .fstep .fs-bar i{position:absolute;left:0;top:0;bottom:0;background:var(--blue);border-radius:2px}
 .tr-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px}
-.tr-tools input[type=search]{background:var(--page);border:1px solid var(--line2);color:var(--ink);border-radius:8px;padding:6px 10px;font:inherit;font-size:13px;width:230px}
+.tr-tools input[type=search]{background:var(--page);border:1px solid var(--line2);color:var(--ink);border-radius:4px;padding:6px 10px;font:inherit;font-size:13px;width:230px}
 .toggle{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink2);cursor:pointer;user-select:none}
 .toggle input{accent-color:var(--crit);width:14px;height:14px;margin:0}
 .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
@@ -125,8 +159,8 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 /* ---------- watchlist ---------- */
 .wl-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
 .wchip{border:1px solid var(--line2);background:var(--surface);color:var(--ink2);border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:500}
-.wchip.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
-.late{color:var(--crit-text);font-weight:650}
+.wchip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.late{color:var(--crit-text);font-weight:600}
 .wl-note{color:var(--mut);font-size:11.5px;margin-top:8px}
 
 /* ---------- feeder cards ---------- */
@@ -134,8 +168,8 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 .fcard{border:1px solid var(--line);border-radius:9px;padding:11px 13px;cursor:pointer;background:var(--page)}
 .fcard:hover{border-color:var(--line2)}
 .fcard.sel{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
-.fcard .fname{font-size:12px;font-weight:650;display:flex;justify-content:space-between;align-items:center}
-.fcard .fpct{font-size:21px;font-weight:650;letter-spacing:-.02em;margin:2px 0 0}
+.fcard .fname{font-size:12px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.fcard .fpct{font-size:21px;font-weight:600;letter-spacing:-.02em;margin:2px 0 0}
 .fcard .fplan{font-size:11px;color:var(--ink2)}
 .fcard .mini{margin-top:8px;display:flex;flex-direction:column;gap:4px}
 .mini .mrow{display:grid;grid-template-columns:64px 1fr max-content;gap:7px;align-items:center;font-size:10.5px;color:var(--mut)}
@@ -147,9 +181,9 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 /* ---------- constraints ---------- */
 .cons{display:flex;flex-direction:column;gap:8px}
 .con{border:1px solid var(--line);border-left:3px solid var(--crit);border-radius:8px;padding:10px 13px;background:var(--page)}
-.con .ct{font-weight:650;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.con .ct{font-weight:600;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .con .cm{color:var(--ink2);font-size:12px;margin-top:3px}
-.pill{font-size:10.5px;font-weight:700;border-radius:999px;padding:1px 8px}
+.pill{font-size:10.5px;font-weight:600;border-radius:999px;padding:1px 8px}
 .pill.crit{background:var(--crit-wash);color:var(--crit-text)}
 .pill.med{background:var(--warn-wash);color:var(--warn-text)}
 
@@ -160,10 +194,10 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 .legend .li{display:inline-flex;align-items:center;gap:6px}
 .legend .sw{width:14px;height:3px;border-radius:2px}
 .legend .sw.dot{width:8px;height:8px;border-radius:50%}
-#tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);border:1px solid var(--line2);border-radius:8px;padding:8px 11px;font-size:12px;box-shadow:0 4px 16px rgba(0,0,0,.13);display:none;max-width:280px}
-#tip .t-h{font-weight:650;margin-bottom:3px}
-#tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--ink2)}
-#tip .t-r b{color:var(--ink);font-weight:600}
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--tip-bg);color:var(--tip-fg);border:0;border-radius:6px;padding:8px 11px;font-size:12px;box-shadow:var(--shadow-popover);display:none;max-width:280px;--ink:var(--tip-fg);--ink2:var(--tip-fg2);--mut:var(--tip-fg2);--crit-text:#ff8e8e;--good-text:#52c88f}
+#tip .t-h{font-weight:600;margin-bottom:3px;color:var(--tip-fg)}
+#tip .t-r{display:flex;justify-content:space-between;gap:14px;color:var(--tip-fg2)}
+#tip .t-r b{color:var(--tip-fg);font-weight:600}
 
 /* ---------- plant layout map ---------- */
 #layout svg{max-width:1080px;margin:0 auto}
@@ -174,7 +208,7 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 .lay-feeder.sel polygon,.lay-feeder.sel rect{stroke:var(--blue);stroke-width:3}
 .lay-feeder:focus-visible{outline:none}
 .lay-feeder:focus-visible polygon,.lay-feeder:focus-visible rect{stroke:var(--blue);stroke-width:3;stroke-dasharray:6 3}
-.lay-a{font-size:14px;font-weight:700;fill:var(--ink)}
+.lay-a{font-size:14px;font-weight:600;fill:var(--ink)}
 .lay-p{font-size:12px;fill:var(--ink2)}
 .lay-n{font-size:12px;font-weight:600;fill:var(--mut);letter-spacing:.02em}
 .lay-up{fill:var(--good-text)}
@@ -182,21 +216,21 @@ tr.sub td:first-child{background:var(--page)!important;padding-left:30px;font-we
 .legend .sw.box{width:12px;height:12px;border-radius:3px}
 
 /* ---------- theme segmented control ---------- */
-.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;background:var(--surface);overflow:hidden}
-.seg button{border:0;background:transparent;color:var(--ink2);font:inherit;font-size:12px;font-weight:500;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:4px;background:var(--surface);overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--ink2);font:inherit;font-size:12px;font-weight:500;padding:6px 11px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .seg button + button{border-left:1px solid var(--line)}
 .seg button:hover{background:var(--nr-wash)}
-.seg button.on{background:var(--ink);color:var(--surface);font-weight:600}
+.seg button.on{background:var(--blue);color:#fff;font-weight:600}
 
 /* ---------- refresh & toast ---------- */
-#btnRefresh{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:6.5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
-#btnRefresh:hover{filter:brightness(1.08)}
+#btnRefresh{display:inline-flex;align-items:center;gap:7px;background:var(--blue);color:#fff;border:0;border-radius:4px;padding:6.5px 14px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+#btnRefresh:hover{background:var(--blue-hov)}
 #btnRefresh:disabled{opacity:.55;cursor:wait}
-#btnRefresh .ico{font-size:14px;line-height:1;display:inline-block}
+#btnRefresh .ico{display:inline-block}
 #btnRefresh.busy .ico{animation:vlspin 1s linear infinite}
 @keyframes vlspin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){#btnRefresh.busy .ico{animation:none}}
-#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;max-width:min(580px,92vw);background:var(--surface);border:1px solid var(--line2);border-left:3px solid var(--blue);border-radius:9px;padding:10px 16px;font-size:12.5px;line-height:1.5;color:var(--ink);box-shadow:0 6px 22px rgba(0,0,0,.18);display:none}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;max-width:min(580px,92vw);background:var(--surface);border:1px solid var(--line2);border-left:3px solid var(--blue);border-radius:8px;padding:10px 16px;font-size:12.5px;line-height:1.5;color:var(--ink);box-shadow:var(--shadow-popover);display:none}
 #toast.good{border-left-color:var(--good)}
 #toast.warn{border-left-color:var(--warn)}
 #toast.crit{border-left-color:var(--crit)}
@@ -213,7 +247,7 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
   <header>
     <div class="brand">
       <h1>SJVN Khavda 200 MW <span style="color:var(--mut);font-weight:500">· Plot 1</span></h1>
-      <div class="sub">Executive Project Review — Design → Procurement → Execution</div>
+      <div class="sub">Executive project review — design → procurement → execution</div>
     </div>
     <span class="chip">Capacity <b>200 MWac</b></span>
     <span class="chip">Data as of <b id="asof"></b></span>
@@ -223,12 +257,12 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
         <option value="ALL">All feeders</option><option value="F1">Feeder 1</option><option value="F2">Feeder 2</option>
         <option value="F3">Feeder 3</option><option value="F4">Feeder 4</option><option value="MCR">MCR</option><option value="CMN">Common</option>
       </select></div>
-      <div><label aria-hidden="true">&nbsp;</label><button id="btnRefresh" title="Refresh data live from the VisiLean API"><span class="ico" aria-hidden="true">↻</span> Refresh</button></div>
+      <div><label aria-hidden="true">&nbsp;</label><button id="btnRefresh" title="Refresh data live from the VisiLean API"><svg class="icn ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg> Refresh</button></div>
       <div><label for="themeSeg">Theme</label>
         <div class="seg" id="themeSeg" role="group" aria-label="Colour theme">
-          <button data-t="auto" title="Follow system setting">Auto</button>
-          <button data-t="light" title="Light theme">☀ Light</button>
-          <button data-t="dark" title="Dark theme">🌙 Dark</button>
+          <button data-t="auto" title="Follow system setting"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg> Auto</button>
+          <button data-t="light" title="Light theme"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg> Light</button>
+          <button data-t="dark" title="Dark theme"><svg class="icn" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg> Dark</button>
         </div>
       </div>
     </div>
@@ -237,7 +271,7 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
   <div class="kpis" id="kpis"></div>
 
   <section class="card span12" style="margin:0 0 14px">
-    <div class="cardhead"><div><h2>Plant Layout — Feeder Progress</h2>
+    <div class="cardhead"><div><h2>Plant layout — feeder progress</h2>
       <p class="hint">Site execution progress by location · click a feeder/block to filter the whole dashboard</p></div>
       <div class="legend" id="layLegend" style="margin:0"></div>
     </div>
@@ -246,7 +280,7 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
 
   <div class="grid">
     <div class="card span8">
-      <div class="cardhead"><div><h2>S-Curve — Plan vs Actual</h2><p class="hint">Cumulative progress, duration-weighted across all activities in scope</p></div></div>
+      <div class="cardhead"><div><h2>S-curve — plan vs actual</h2><p class="hint">Cumulative progress, duration-weighted across all activities in scope</p></div></div>
       <div class="legend">
         <span class="li"><span class="sw" style="background:var(--blue)"></span>Actual (cumulative)</span>
         <span class="li"><span class="sw" style="background:var(--mut);height:0;border-top:2px dashed var(--mut)"></span>Plan (cumulative)</span>
@@ -260,13 +294,13 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
     </div>
 
     <div class="card span4">
-      <div class="cardhead"><div><h2>Stage Progress</h2><p class="hint">Actual bar vs plan marker · click a stage to filter</p></div></div>
+      <div class="cardhead"><div><h2>Stage progress</h2><p class="hint">Actual bar vs plan marker · click a stage to filter</p></div></div>
       <div id="stages"></div>
     </div>
   </div>
 
   <section class="card span12">
-    <div class="cardhead"><div><h2>Design → Procurement → Execution Pipeline</h2>
+    <div class="cardhead"><div><h2>Design → procurement → execution pipeline</h2>
       <p class="hint">Every supply package tracked across its full lifecycle. Click a package to expand feeder-wise detail. Red-ringed cells are past their planned date.</p></div></div>
     <div class="funnel" id="funnel"></div>
     <div class="tr-tools">
@@ -281,16 +315,16 @@ footer code{background:var(--nr-wash);padding:1px 5px;border-radius:4px;font-siz
 
   <div class="grid" style="margin-top:14px">
     <div class="card span7">
-      <div class="cardhead"><div><h2>Delay &amp; Critical Watchlist</h2><p class="hint">Activities past their planned finish, and critical-path items</p></div></div>
+      <div class="cardhead"><div><h2>Delay &amp; critical watchlist</h2><p class="hint">Activities past their planned finish, and critical-path items</p></div></div>
       <div class="wl-chips" id="wlChips"></div>
       <div class="tblwrap" style="max-height:430px;overflow-y:auto"><table id="wlTable"></table></div>
       <div class="wl-note" id="wlNote"></div>
     </div>
     <div class="card span5">
-      <div class="cardhead"><div><h2>Feeder Scorecard</h2><p class="hint">Site execution only (stages 04–16), duration-weighted vs plan · click to filter</p></div></div>
+      <div class="cardhead"><div><h2>Feeder scorecard</h2><p class="hint">Site execution only (stages 04–16), duration-weighted vs plan · click to filter</p></div></div>
       <div class="fgrid" id="feeders"></div>
       <div style="margin-top:14px">
-        <h2 style="font-size:13.5px;margin:0 0 2px">Open Constraints</h2>
+        <h2 style="font-size:13.5px;margin:0 0 2px">Open constraints</h2>
         <p class="hint">From the VisiLean constraint log</p>
         <div class="cons" id="cons"></div>
       </div>
@@ -324,7 +358,7 @@ const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','
 function fmtD(s){ if(!s) return '—'; const p=s.split('-'); return (+p[2]) + ' ' + MON[+p[1]-1] + ' ' + p[0].slice(2); }
 function fmtQ(v){ if(v==null) return ''; if(Math.abs(v)>=1e6) return (v/1e6).toFixed(2)+'M'; if(Math.abs(v)>=1e4) return Math.round(v/1e3)+'k'; return (Math.round(v*100)/100).toLocaleString('en-IN'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-const ST_LABEL = { C:'Complete', S:'Started', NC:'Committed·pending', NR:'Not started' };
+const ST_LABEL = { C:'Complete', S:'Started', NC:'Not committed', NR:'Not ready' };
 
 function scope(){
   return DATA.tasks.filter(t =>
@@ -632,7 +666,7 @@ function renderWatch(){
   rows.forEach(t=>{
     const dl = daysLate(t);
     html += `<tr>
-      <td style="max-width:230px">${t.cr?'<span title="Critical activity" style="color:var(--crit);font-weight:700">⚑ </span>':''}${esc(t.n)}</td>
+      <td style="max-width:230px">${t.cr?'<svg class="icn" viewBox="0 0 24 24" style="color:var(--crit);vertical-align:-2px;margin-right:3px" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>':''}${esc(t.n)}</td>
       <td style="white-space:nowrap">${esc(t.s)}</td>
       <td style="max-width:180px;color:var(--ink2)">${esc(t.r||t.tr||'')}</td>
       <td style="white-space:nowrap;color:var(--ink2)">${esc(t.o||'—')}</td>
@@ -710,10 +744,10 @@ function siteAgg(f){
     done:list.filter(t=>t.st==='C').length, live:list.filter(t=>t.st==='S').length };
 }
 const LAY_BANDS = [
-  { min:100, c:'#12a67c', label:'Progress = 100%' },
-  { min:75,  c:'#4caf50', label:'Progress ≥ 75%' },
-  { min:40,  c:'#f2a71b', label:'Progress ≥ 40%' },
-  { min:1e-9,c:'#ed7d31', label:'Progress > 0%' },
+  { min:100, c:'#04962e', label:'Progress = 100%' },
+  { min:75,  c:'#00d13b', label:'Progress ≥ 75%' },
+  { min:40,  c:'#f59e00', label:'Progress ≥ 40%' },
+  { min:1e-9,c:'#ff944b', label:'Progress > 0%' },
 ];
 function layFill(p){ const b = LAY_BANDS.find(b=>p>=b.min); return b ? b.c : 'none'; }
 const LAY_GEO = {
@@ -779,7 +813,7 @@ function renderCons(){
   $('#cons').innerHTML = cs.map(c=>{
     const od = !c.done && c.target && d2n(c.target)<TODAY;
     const dl = od? Math.round((TODAY-d2n(c.target))/MS) : 0;
-    return `<div class="con" style="border-left-color:${c.done?'var(--good)':od?'var(--crit)':'var(--warn)'}">
+    return `<div class="con" style="border-left-color:${c.done?'var(--con-closed)':od?'var(--con-open)':'var(--con-committed)'}">
       <div class="ct">${esc(c.title)}
         <span class="pill ${c.pri==='High'?'crit':'med'}">${esc(c.pri||'')}</span>
         ${od?`<span class="pill crit num">${dl}d overdue</span>`:''}</div>
