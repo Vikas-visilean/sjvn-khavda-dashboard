@@ -34,7 +34,7 @@ jobs:
           VL_TASKS_URL: ${{ secrets.VL_TASKS_URL }}
           VL_CONSTRAINTS_URL: ${{ secrets.VL_CONSTRAINTS_URL }}
       - name: Stage site
-        run: mkdir -p _site && cp index.html _site/index.html
+        run: mkdir -p _site && cp index.html _site/index.html && cp -r fonts _site/fonts
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
