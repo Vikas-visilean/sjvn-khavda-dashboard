@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
   schedule:
-    # daily at 02:30 UTC (08:00 IST)
-    - cron: '30 2 * * *'
+    # every 2 hours — keeps the published data fresh for the Refresh button
+    - cron: '15 */2 * * *'
   workflow_dispatch:
 
 permissions:

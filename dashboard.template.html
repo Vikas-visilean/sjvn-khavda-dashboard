@@ -880,7 +880,13 @@ async function checkNewerBuild(){
   if(m && m[1] !== DATA.generatedAt) return 'newer';
   return 'same';
 }
-async function refreshLive(){
+function fmtBuildAge(){
+  const mins = Math.max(0, Math.round((Date.now() - Date.parse(DATA.generatedAt)) / 60000));
+  if(mins < 60) return mins + ' min ago';
+  const h = Math.floor(mins/60);
+  return h + ' h ' + (mins%60) + ' min ago';
+}
+async function refreshLive(quiet){
   const btn = $('#btnRefresh');
   btn.disabled = true; btn.classList.add('busy');
   const cfg = apiConfig();
@@ -893,17 +899,21 @@ async function refreshLive(){
         toast('Refreshed live from VisiLean — ' + d.tasks.length + ' activities, ' + new Date().toLocaleTimeString() + '.', 'good');
         return;
       }catch(e){
-        // CORS / network / auth failure -> fall through to published-build check
         console.warn('Live API refresh failed:', e);
-        var liveFailed = true;
+        if(!quiet) toast('Direct refresh was blocked — the VisiLean API only accepts requests from approved origins. Ask the VisiLean team to allowlist <b>' + esc(location.origin) + '</b>. Checking for newer published data instead…', 'warn');
       }
     }
     const chk = await checkNewerBuild().catch(()=> 'error');
-    if(chk === 'newer'){ toast('A newer published build is available — reloading…', 'good'); setTimeout(()=>location.reload(), 800); return; }
-    const why = cfg
-      ? 'The VisiLean API refused this origin (CORS). Ask VisiLean to allowlist <b>' + esc(location.origin) + '</b> for direct live refresh.'
-      : 'No API endpoints are configured for direct live refresh in this browser.';
-    toast(why + ' You are on the latest published build (' + esc(new Date(DATA.generatedAt).toLocaleString()) + '), which auto-rebuilds daily — or <a href="' + ACTIONS_URL + '" target="_blank" rel="noopener">trigger a rebuild now</a>.', liveFailed ? 'warn' : '', true);
+    if(chk === 'newer'){
+      toast('Newer data has been published — updating…', 'good');
+      setTimeout(()=>location.reload(), 700);
+      return;
+    }
+    if(!quiet){
+      toast('<b>You\'re up to date.</b> Latest data from VisiLean, published ' + esc(fmtBuildAge()) +
+        ' — the dashboard republishes automatically every 2 hours.' +
+        ' <span style="color:var(--mut)">Admins can <a href="' + ACTIONS_URL + '" target="_blank" rel="noopener">publish now</a>.</span>', 'good');
+    }
   } finally {
     btn.disabled = false; btn.classList.remove('busy');
   }
@@ -925,13 +935,18 @@ function setTheme(mode){
   $('#fFeeder').addEventListener('change', e=>{ state.feeder=e.target.value; render(); });
   $('#trSearch').addEventListener('input', e=>{ state.trSearch=e.target.value.trim().toLowerCase(); renderTracker(); });
   $('#trDelay').addEventListener('change', e=>{ state.trDelay=e.target.checked; renderTracker(); });
-  $('#btnRefresh').addEventListener('click', refreshLive);
+  $('#btnRefresh').addEventListener('click', ()=>refreshLive(false));
   render();
   const qs = new URLSearchParams(location.search);
-  // auto live-refresh on load when endpoints are configured (disable with ?live=0)
-  if(apiConfig() && qs.get('live') !== '0') refreshLive();
-  // optional periodic refresh: ?refresh=<minutes>
+  // on load: live-refresh when endpoints are configured (disable with ?live=0),
+  // otherwise silently pick up any newer published build
+  if(qs.get('live') !== '0'){
+    if(apiConfig()) refreshLive(true);
+    else checkNewerBuild().then(chk=>{ if(chk==='newer') location.reload(); }).catch(()=>{});
+  }
+  // periodic freshness check — every 30 min by default, ?refresh=<minutes> to tune
   const iv = parseFloat(qs.get('refresh'));
-  if(iv > 0) setInterval(refreshLive, Math.max(5, iv) * 60000);
+  const periodMin = iv > 0 ? Math.max(5, iv) : 30;
+  setInterval(()=>refreshLive(true), periodMin * 60000);
 })();
 </script>
